@@ -1,0 +1,127 @@
+// PriorIX — Prisma Schema
+// Dev: SQLite (file:./dev.db)  |  Prod: change provider to "postgresql"
+//
+// Note: SQLite does not support native Prisma enums.
+// String fields enforce enum values at the application layer.
+// Valid values are documented in comments on each field.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Plant {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  createdAt DateTime @default(now())
+
+  users  User[]
+  orders Order[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("WORKER")     // ADMIN | MANAGER | OFFICE | WORKER
+  plantId      String?
+  fcmToken     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  plant         Plant?                     @relation(fields: [plantId], references: [id])
+  tasks         Task[]                     @relation("AssignedTasks")
+  createdOrders Order[]                    @relation("CreatedOrders")
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  overrides     EisenhowerClassification[] @relation("OverriddenBy")
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  reference      String   @unique
+  clientName     String
+  description    String
+  quantity       Int
+  unit           String
+  complexity     String   @default("MEDIUM")   // LOW | MEDIUM | HIGH
+  clientPriority String   @default("STANDARD") // STANDARD | PREMIUM
+  deadline       DateTime
+  status         String   @default("PENDING")  // PENDING | IN_PROGRESS | QUALITY_CHECK | DONE | CANCELLED
+  plantId        String
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  plant          Plant                     @relation(fields: [plantId], references: [id])
+  createdBy      User                      @relation("CreatedOrders", fields: [createdById], references: [id])
+  tasks          Task[]
+  classification EisenhowerClassification?
+}
+
+model Task {
+  id               String    @id @default(cuid())
+  orderId          String
+  assignedToId     String?
+  title            String
+  description      String?
+  estimatedMinutes Int?
+  actualMinutes    Int?
+  status           String    @default("TODO") // TODO | IN_PROGRESS | DONE
+  startedAt        DateTime?
+  completedAt      DateTime?
+  photoUrl         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  assignedTo User? @relation("AssignedTasks", fields: [assignedToId], references: [id])
+}
+
+model EisenhowerClassification {
+  id               String    @id @default(cuid())
+  orderId          String    @unique
+  urgency          Boolean
+  importance       Boolean
+  quadrant         String    // Q1 | Q2 | Q3 | Q4
+  score            Float
+  classifiedAt     DateTime  @default(now())
+  overriddenById   String?
+  overriddenAt     DateTime?
+  isManualOverride Boolean   @default(false)
+
+  order        Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  overriddenBy User? @relation("OverriddenBy", fields: [overriddenById], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  oldValue   String?
+  newValue   String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

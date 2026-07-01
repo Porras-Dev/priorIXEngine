@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Environment — NEVER commit
+.env
+backend/.env
+
+# Build outputs
+dist/
+build/
+release/
+out/
+
+# Embedded Node.js binary (tracked separately, not in git)
+desktop/resources/node/
+
+# Prisma databases
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/prisma/production.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+
+# Expo / React Native
+.expo/
+android/
+ios/
+mobile/.expo/
+mobile/node_modules/

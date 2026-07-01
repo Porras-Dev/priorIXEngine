@@ -1,0 +1,17 @@
+{
+  "name": "priorix",
+  "version": "0.1.0",
+  "description": "Open source industrial production management with AI-powered Eisenhower Matrix order prioritization",
+  "private": true,
+  "workspaces": {
+    "packages": ["backend", "desktop", "mobile"],
+    "nohoist": ["**/electron", "**/electron/**"]
+  },
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "start:backend": "npm run start --workspace=backend"
+  },
+  "keywords": ["industrial", "production", "management", "eisenhower", "iot", "nodejs"],
+  "author": "PriorIX Contributors",
+  "license": "MIT"
+}
