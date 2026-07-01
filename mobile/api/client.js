@@ -2,11 +2,11 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 
-const BASE_URL = 'http://172.20.10.2:3001/api';
-
-const client = axios.create({ baseURL: BASE_URL, timeout: 10000 });
+const client = axios.create({ timeout: 10000 });
 
 client.interceptors.request.use(async (config) => {
+  const serverUrl = await SecureStore.getItemAsync('serverUrl');
+  config.baseURL = serverUrl ? `${serverUrl}/api` : 'http://192.168.1.1:3001/api';
   const token = await SecureStore.getItemAsync('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

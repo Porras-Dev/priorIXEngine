@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../context/AuthContext';
 
 export default function Index() {
@@ -8,11 +9,17 @@ export default function Index() {
 
   useEffect(() => {
     if (loading) return;
-    if (token) {
-      router.replace('/(tabs)');
-    } else {
-      router.replace('/login');
+    async function redirect() {
+      const serverUrl = await SecureStore.getItemAsync('serverUrl');
+      if (!serverUrl) {
+        router.replace('/setup');
+      } else if (token) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/login');
+      }
     }
+    redirect();
   }, [loading, token]);
 
   return (
